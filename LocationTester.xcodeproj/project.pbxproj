@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B92BBA131DC4C1E400F3C7A0 /* GPSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */; };
 		B979AE941DA10B7800EE4D46 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AE931DA10B7800EE4D46 /* AppDelegate.swift */; };
 		B979AE961DA10B7800EE4D46 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AE951DA10B7800EE4D46 /* ViewController.swift */; };
 		B979AE991DA10B7800EE4D46 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B979AE971DA10B7800EE4D46 /* Main.storyboard */; };
@@ -15,6 +16,7 @@
 		B979AEA11DA10B7800EE4D46 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B979AE9F1DA10B7800EE4D46 /* LaunchScreen.storyboard */; };
 		B979AEAC1DA10B7800EE4D46 /* LocationTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AEAB1DA10B7800EE4D46 /* LocationTesterTests.swift */; };
 		B979AEB71DA10B7800EE4D46 /* LocationTesterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AEB61DA10B7800EE4D46 /* LocationTesterUITests.swift */; };
+		B979AEC71DA10C1300EE4D46 /* ScheduledLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B979AEC61DA10C1300EE4D46 /* ScheduledLocationManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GPSManager.swift; sourceTree = "<group>"; };
 		B979AE901DA10B7800EE4D46 /* LocationTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B979AE931DA10B7800EE4D46 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B979AE951DA10B7800EE4D46 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -49,6 +52,9 @@
 		B979AEB21DA10B7800EE4D46 /* LocationTesterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationTesterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B979AEB61DA10B7800EE4D46 /* LocationTesterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTesterUITests.swift; sourceTree = "<group>"; };
 		B979AEB81DA10B7800EE4D46 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B979AEC41DA10C1300EE4D46 /* LocationTester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LocationTester-Bridging-Header.h"; sourceTree = "<group>"; };
+		B979AEC51DA10C1300EE4D46 /* ScheduledLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ScheduledLocationManager.h; path = LocationTester/ScheduledLocationManager.h; sourceTree = "<group>"; };
+		B979AEC61DA10C1300EE4D46 /* ScheduledLocationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ScheduledLocationManager.m; path = LocationTester/ScheduledLocationManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,10 +85,13 @@
 		B979AE871DA10B7800EE4D46 = {
 			isa = PBXGroup;
 			children = (
+				B979AEC51DA10C1300EE4D46 /* ScheduledLocationManager.h */,
+				B979AEC61DA10C1300EE4D46 /* ScheduledLocationManager.m */,
 				B979AE921DA10B7800EE4D46 /* LocationTester */,
 				B979AEAA1DA10B7800EE4D46 /* LocationTesterTests */,
 				B979AEB51DA10B7800EE4D46 /* LocationTesterUITests */,
 				B979AE911DA10B7800EE4D46 /* Products */,
+				B979AEC41DA10C1300EE4D46 /* LocationTester-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -106,6 +115,7 @@
 				B979AE9F1DA10B7800EE4D46 /* LaunchScreen.storyboard */,
 				B979AEA21DA10B7800EE4D46 /* Info.plist */,
 				B979AE9A1DA10B7800EE4D46 /* LocationTester.xcdatamodeld */,
+				B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */,
 			);
 			path = LocationTester;
 			sourceTree = "<group>";
@@ -197,7 +207,13 @@
 					B979AE8F1DA10B7800EE4D46 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = M75G64F962;
+						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					B979AEA61DA10B7800EE4D46 = {
 						CreatedOnToolsVersion = 8.0;
@@ -267,7 +283,9 @@
 			files = (
 				B979AE961DA10B7800EE4D46 /* ViewController.swift in Sources */,
 				B979AE9C1DA10B7800EE4D46 /* LocationTester.xcdatamodeld in Sources */,
+				B92BBA131DC4C1E400F3C7A0 /* GPSManager.swift in Sources */,
 				B979AE941DA10B7800EE4D46 /* AppDelegate.swift in Sources */,
+				B979AEC71DA10C1300EE4D46 /* ScheduledLocationManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,11 +437,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = M75G64F962;
 				INFOPLIST_FILE = LocationTester/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.beekhof.LocationTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "LocationTester-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -432,11 +453,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = M75G64F962;
 				INFOPLIST_FILE = LocationTester/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.beekhof.LocationTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "LocationTester-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -518,6 +541,7 @@
 				B979AEBD1DA10B7800EE4D46 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B979AEBE1DA10B7800EE4D46 /* Build configuration list for PBXNativeTarget "LocationTesterTests" */ = {
 			isa = XCConfigurationList;
@@ -526,6 +550,7 @@
 				B979AEC01DA10B7800EE4D46 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B979AEC11DA10B7800EE4D46 /* Build configuration list for PBXNativeTarget "LocationTesterUITests" */ = {
 			isa = XCConfigurationList;
@@ -534,6 +559,7 @@
 				B979AEC31DA10B7800EE4D46 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

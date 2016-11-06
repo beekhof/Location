@@ -8,13 +8,45 @@
 
 import UIKit
 import CoreData
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    let manager: GPSManager = GPSManager.sharedInstance
 
+    static var shared: AppDelegate? {
+        get {
+            return UIApplication.shared.delegate as? AppDelegate
+        }
+    }
 
+    func notification(withTitle title: String, action: String, andBody body: String) {
+        
+        print("\(UIApplication.shared.applicationState.rawValue):\(UIApplicationState.background.rawValue) \(title): \(body)")
+        
+        if UIApplication.shared.applicationState == UIApplicationState.active {
+            OperationQueue.main.addOperation({
+                let alert = UIAlertController(title: title, message: body, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: action, style: .cancel, handler: nil))
+                self.window?.rootViewController?.present(alert, animated: true, completion: nil)
+            })
+            
+        } else if UIApplication.shared.applicationState == UIApplicationState.background {
+            let notify = UILocalNotification()
+            notify.fireDate = Date()
+            notify.timeZone = NSTimeZone.default
+            notify.alertBody = body
+            notify.alertAction = action
+            notify.alertTitle = title
+            notify.soundName = UILocalNotificationDefaultSoundName
+            //        gpsNotify.applicationIconBadgeNumber = 6;
+            notify.repeatInterval = NSCalendar.Unit(rawValue: UInt(0))
+            UIApplication.shared.presentLocalNotificationNow(notify)
+        }
+    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         return true
