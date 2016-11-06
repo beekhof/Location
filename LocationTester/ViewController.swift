@@ -17,6 +17,11 @@ class ViewController: UIViewController {
     @IBOutlet weak var info: UILabel!
     @IBOutlet weak var modeControl: UISegmentedControl!
     @IBOutlet weak var flavorControl: UISegmentedControl!
+    
+    var batteryLevel: Float = 1.0
+    let batteryMinimum: Float = 0.30
+    var batteryState: UIDeviceBatteryState = UIDeviceBatteryState.unknown
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -26,22 +31,23 @@ class ViewController: UIViewController {
 
         NotificationCenter.default.addObserver(
             self, selector: #selector(applicationDidEnterBackground), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(batteryStateChange), name: NSNotification.Name.UIDeviceBatteryStateDidChange, object: nil)
+
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(batteryLevelChange), name: NSNotification.Name.UIDeviceBatteryLevelDidChange, object: nil)
+        
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(powerStateChanged), name: NSNotification.Name.NSProcessInfoPowerStateDidChange, object: nil)
+
 
         print(UserDefaults.standard.dictionaryRepresentation())
         
-        modeControl.selectedSegmentIndex = UserDefaults.standard.integer(forKey: "option.mode")
-        AppDelegate.shared?.manager.setMode(value: GPSManager.Mode(rawValue: modeControl.selectedSegmentIndex)!, reason: #function)
-
-        if UserDefaults.standard.integer(forKey: "option.flavour") > 0 {
-            flavorControl.selectedSegmentIndex = UserDefaults.standard.integer(forKey: "option.flavour")
-            AppDelegate.shared?.manager.setFlavour(value: GPSManager.Flavour(rawValue: flavorControl.selectedSegmentIndex)!, reason: #function)
-        }
-
-        accuracy.selectedSegmentIndex = UserDefaults.standard.integer(forKey: "option.accuracy")
-        self.setAccuracy(index: accuracy.selectedSegmentIndex)
-
-        filterMultiplier.selectedSegmentIndex = UserDefaults.standard.integer(forKey: "option.factor")
-        self.updateFactor(filterMultiplier)
+        modeControl.selectedSegmentIndex =  GPSManager.Options.mode.restore()
+        flavorControl.selectedSegmentIndex = GPSManager.Options.flavour.restore()
+        accuracy.selectedSegmentIndex = GPSManager.Options.accuracy.restore()
+        filterMultiplier.selectedSegmentIndex = GPSManager.Options.factor.restore()
 
         let types = UIUserNotificationType.alert //| UIUserNotificationType.badge | UIUserNotificationType.sound
         let mySettings = UIUserNotificationSettings.init(types: types, categories: nil)
@@ -51,105 +57,6 @@ class ViewController: UIViewController {
         self.kickTimer(force: true)
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-//        self.updateView()
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-    @IBAction func ChangeMode(_ sender: AnyObject) {
-        UserDefaults.standard.set(sender.selectedSegmentIndex, forKey: "option.mode")
-        print("option.mode", UserDefaults.standard.integer(forKey: "option.mode"))
-        AppDelegate.shared?.manager.setMode(value: GPSManager.Mode(rawValue: sender.selectedSegmentIndex)!, reason: #function)
-        self.resetStats()
-    }
-    
-    @IBAction func ChangeFlavor(_ sender: AnyObject) {
-        UserDefaults.standard.set(sender.selectedSegmentIndex, forKey: "option.flavour")
-        print("option.flavour", UserDefaults.standard.integer(forKey: "option.flavour"))
-        AppDelegate.shared?.manager.setFlavour(value: GPSManager.Flavour(rawValue: sender.selectedSegmentIndex)!, reason: #function)
-        self.resetStats()
-    }
-    
-    @IBAction func updateFactor(_ sender: AnyObject) {
-        UserDefaults.standard.set(sender.selectedSegmentIndex, forKey: "option.factor")
-        print("option.factor", UserDefaults.standard.integer(forKey: "option.factor"))
-
-        switch sender.selectedSegmentIndex {
-        case 0:
-            GPSManager.sharedInstance.manager.distanceFilter = kCLDistanceFilterNone
-            break
-        default:
-            GPSManager.sharedInstance.manager.distanceFilter = GPSManager.sharedInstance.manager.desiredAccuracy * Double(sender.selectedSegmentIndex)
-            print(GPSManager.sharedInstance.manager.distanceFilter, GPSManager.sharedInstance.manager.desiredAccuracy, Double(sender.selectedSegmentIndex))
-        }
-        self.resetStats()
-    }
-
-    @IBAction func ChangeAccuracy(_ sender: AnyObject) {
-        self.setAccuracy(index: sender.selectedSegmentIndex)
-        self.updateFactor(filterMultiplier)
-        self.resetStats()
-    }
-    
-    func setAccuracy(index: Int) {
-        UserDefaults.standard.set(index, forKey: "option.accuracy")
-        print("option.accuracy", UserDefaults.standard.integer(forKey: "option.accuracy"))
-
-        switch index {
-        case 5:
-            GPSManager.sharedInstance.manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-            break
-        case 4:
-            GPSManager.sharedInstance.manager.desiredAccuracy = kCLLocationAccuracyBest
-            break
-        case 3:
-            GPSManager.sharedInstance.manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-            break
-        case 2:
-            GPSManager.sharedInstance.manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-            break
-        case 1:
-            GPSManager.sharedInstance.manager.desiredAccuracy = kCLLocationAccuracyKilometer
-            break
-        case 0:
-            GPSManager.sharedInstance.manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
-            break
-        default:
-            AppDelegate.shared?.notification(withTitle: "Invalid accuracy", action: "ok", andBody: "Selected: \(index)")
-            break
-        }
-    }
-
-    var timer: Timer? = nil
-
-    func kickTimer(force: Bool) {
-        DispatchQueue.global().async(execute: {
-        //DispatchQueue.main.async {
-            if force || UIApplication.shared.applicationState == UIApplicationState.active {
-                self.timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.updateStats), userInfo: nil, repeats: false)
-                RunLoop.current.add(self.timer!, forMode: RunLoopMode.defaultRunLoopMode)
-                RunLoop.current.run()
-            }
-        })
-    }
-
-    func applicationDidBecomeActive() {
-        DispatchQueue.main.async {
-            self.viewDidAppear(true)
-            self.kickTimer(force: true)
-        }
-    }
-
-    func applicationDidEnterBackground() {
-        if timer != nil && timer!.isValid {
-            timer!.invalidate()
-        }
-    }
-    
     func updateStats() {
         if UIApplication.shared.applicationState != UIApplicationState.active {
             AppDelegate.shared?.notification(withTitle: "Background update", action: "ok", andBody: "Bad \(UIApplication.shared.applicationState)")
@@ -161,75 +68,143 @@ class ViewController: UIViewController {
     }
     
     func resetStats() {
-        AppDelegate.shared?.manager.callCount = 0
-        AppDelegate.shared?.manager.lastSummary = Date()
+        GPSManager.shared.callCount = 0
+        GPSManager.shared.lastSummary = Date()
         DispatchQueue.main.async {
             self.updateView()
         }
     }
 
     func updateView() {
-        var mode = (AppDelegate.shared?.manager.mode.rawValue)!
-        if mode < 0 {
-            mode = 0
-        }
-        modeControl.selectedSegmentIndex = mode
-        flavorControl.selectedSegmentIndex = (AppDelegate.shared?.manager.flavour.rawValue)!
+        modeControl.selectedSegmentIndex = GPSManager.Options.mode.get()
+        flavorControl.selectedSegmentIndex = GPSManager.Options.flavour.get()
+        filterMultiplier.selectedSegmentIndex = GPSManager.Options.factor.get()
+        accuracy.selectedSegmentIndex = GPSManager.Options.accuracy.get()
+
+        filter.text = "\(GPSManager.shared.manager.distanceFilter)"
+        info.text = " \(GPSManager.shared.callCount) calls in the last \(-GPSManager.shared.lastSummary.timeIntervalSinceNow) seconds"
         
-        info.text = " \((AppDelegate.shared?.manager.callCount)!) calls in the last \(0-(AppDelegate.shared?.manager.lastSummary.timeIntervalSinceNow)!) seconds"
-        if ((AppDelegate.shared?.manager.lastLocationError) != nil) {
-            errorInfo.text = "Error \(AppDelegate.shared?.manager.lastLocationError?.errorCode): \(AppDelegate.shared?.manager.lastLocationError?.localizedDescription)"
+        if ((GPSManager.shared.lastLocationError) != nil) {
+            errorInfo.text = "Error \(GPSManager.shared.lastLocationError?.errorCode): \(GPSManager.shared.lastLocationError?.localizedDescription)"
             
         } else {
             errorInfo.text = "No error"
         }
-        
-        var factor: Int = 0
-        
-        if GPSManager.sharedInstance.manager.desiredAccuracy > 0 {
-            factor = Int(GPSManager.sharedInstance.manager.distanceFilter / GPSManager.sharedInstance.manager.desiredAccuracy)
-            print(GPSManager.sharedInstance.manager.distanceFilter, GPSManager.sharedInstance.manager.desiredAccuracy, factor)
-        }
-        
-        if factor < filterMultiplier.numberOfSegments {
-            print(GPSManager.sharedInstance.manager.desiredAccuracy, GPSManager.sharedInstance.manager.distanceFilter)
-            filterMultiplier.selectedSegmentIndex = factor
-        } else {
-            AppDelegate.shared?.notification(withTitle: "Unhandled multiplier", action: "ok", andBody: "Calculated: \(factor)")
-        }
-        
-        filter.text = "\(GPSManager.sharedInstance.manager.distanceFilter)"
-        
-        switch GPSManager.sharedInstance.manager.desiredAccuracy {
-        case kCLLocationAccuracyBestForNavigation:
-            accuracy.selectedSegmentIndex = 5
-            break
-        case kCLLocationAccuracyBest:
-            accuracy.selectedSegmentIndex = 4
-            break
-        case kCLLocationAccuracyNearestTenMeters:
-            accuracy.selectedSegmentIndex = 3
-            break
-        case kCLLocationAccuracyHundredMeters:
-            accuracy.selectedSegmentIndex = 2
-            break
-        case kCLLocationAccuracyKilometer:
-            accuracy.selectedSegmentIndex = 1
-            break
-        case kCLLocationAccuracyThreeKilometers:
-            accuracy.selectedSegmentIndex = 0
-            break
-        default:
-            AppDelegate.shared?.notification(withTitle: "Unhandle accuracy", action: "ok", andBody: "Active: \(GPSManager.sharedInstance.manager.desiredAccuracy)")
-            
-            break
-        }
-        
-        print("option.mode", modeControl.selectedSegmentIndex)
-        print("option.flavor", flavorControl.selectedSegmentIndex)
-        print("option.accuracy", accuracy.selectedSegmentIndex)
-        print("option.factor", filterMultiplier.selectedSegmentIndex)
-        print("updated")
     }
+    
+    var timer: Timer? = nil
+    
+    func kickTimer(force: Bool) {
+        DispatchQueue.global().async(execute: {
+            //DispatchQueue.main.async {
+            if force || UIApplication.shared.applicationState == UIApplicationState.active {
+                self.timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.updateStats), userInfo: nil, repeats: false)
+                RunLoop.current.add(self.timer!, forMode: RunLoopMode.defaultRunLoopMode)
+                RunLoop.current.run()
+            }
+        })
+    }
+
+    // MARK: User actions
+    @IBAction func ChangeMode(_ sender: UISegmentedControl) {
+        GPSManager.Options.mode.set(value: sender.selectedSegmentIndex)
+        self.resetStats()
+    }
+    
+    @IBAction func ChangeFlavor(_ sender: UISegmentedControl) {
+        GPSManager.Options.flavour.set(value: sender.selectedSegmentIndex)
+        self.resetStats()
+    }
+    
+    @IBAction func updateFactor(_ sender: UISegmentedControl) {
+        GPSManager.Options.factor.set(value: sender.selectedSegmentIndex)
+        self.resetStats()
+    }
+    
+    @IBAction func ChangeAccuracy(_ sender: UISegmentedControl) {
+        GPSManager.Options.accuracy.set(value: sender.selectedSegmentIndex)
+        GPSManager.Options.factor.set(value: filterMultiplier.selectedSegmentIndex)
+        self.resetStats()
+    }
+    
+    // MARK: Callbacks
+    override func viewDidAppear(_ animated: Bool) {
+        self.updateView()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    func applicationDidBecomeActive() {
+        DispatchQueue.main.async {
+            self.viewDidAppear(true)
+            self.kickTimer(force: true)
+        }
+    }
+    
+    func applicationDidEnterBackground() {
+        if timer != nil && timer!.isValid {
+            timer!.invalidate()
+        }
+    }
+    
+    func batteryStateChange() {
+        let next = UIDevice.current.batteryState
+        
+        switch(next) {
+        case UIDeviceBatteryState.unknown:
+            if UIDevice.current.batteryLevel > 0.0 && UIDevice.current.batteryLevel < batteryMinimum {
+                GPSManager.shared.setFlavour(value: .LowPower, reason: "Low battery (unknown) at \(UIDevice.current.batteryLevel * 100)")
+            }
+            break
+            
+        case UIDeviceBatteryState.unplugged:
+            if UIDevice.current.batteryLevel < batteryMinimum {
+                GPSManager.shared.setFlavour(value: .LowPower, reason: "Low battery: unplugged at \(UIDevice.current.batteryLevel * 100)")
+            }
+            break
+            
+        case UIDeviceBatteryState.charging:
+            if batteryState == UIDeviceBatteryState.unplugged {
+                GPSManager.shared.setFlavour(value: .Foreground, reason: "Charging from \(UIDevice.current.batteryLevel * 100)")
+            }
+            break
+            
+        case UIDeviceBatteryState.full:
+            break
+        }
+        batteryState = next;
+    }
+    
+    func batteryLevelChange() {
+        let next = UIDevice.current.batteryLevel
+        
+        if next < 0.0 {
+            return
+            
+        } else if batteryLevel > next && next < batteryMinimum {
+            GPSManager.shared.setFlavour(value: .LowPower, reason: "Low battery change \(next * 100)")
+        }
+        batteryLevel = next
+    }
+    
+    func powerStateChanged() {
+        if ProcessInfo.processInfo.isLowPowerModeEnabled {
+            // Low Power Mode is enabled. Start reducing activity to conserve energy.
+            GPSManager.shared.setFlavour(value: .LowPower, reason: "Low power mode enabled")
+            
+        } else if UIDevice.current.batteryLevel > 0.0 {
+            // Low Power Mode is not enabled.
+            if UIDevice.current.batteryLevel < batteryMinimum {
+                GPSManager.shared.setFlavour(value: .LowPower, reason: "Power mode \(UIDevice.current.batteryLevel * 100)")
+                
+            } else {
+                GPSManager.shared.setFlavour(value: .Foreground, reason: "Low power mode disabled")
+            }
+        }
+    }
+
 }
 

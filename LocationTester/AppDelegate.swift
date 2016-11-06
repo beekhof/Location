@@ -14,7 +14,7 @@ import UserNotifications
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    let manager: GPSManager = GPSManager.sharedInstance
+    let manager: GPSManager = GPSManager.shared
 
     static var shared: AppDelegate? {
         get {
