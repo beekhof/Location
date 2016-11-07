@@ -11,12 +11,31 @@ import MapKit
 
 class GPSManager: NSObject, CLLocationManagerDelegate {
     
+    enum Flavour: Int {
+        case None = 0
+        case Paused
+        case LowPower
+        case Deferred
+        case Foreground
+        case Timer
+    }
+    
+    let activeMode = Mode.Active.rawValue
+    
+    enum Mode: Int {
+        case NotAuthorized = -1
+        case Off
+        case VisitsOnly
+        case Active
+        case Significant
+    }
+    
     enum Options: String {
         case mode = "option.mode"
         case flavour = "option.flavour"
         case factor = "option.factor"
         case accuracy = "option.accuracy"
-
+        
         func get() -> Int {
             return UserDefaults.standard.integer(forKey: self.rawValue)
         }
@@ -25,7 +44,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             UserDefaults.standard.set(value, forKey: self.rawValue)
             setActive(value: value)
         }
-
+        
         func restore() -> Int {
             let value = UserDefaults.standard.integer(forKey: self.rawValue)
             setActive(value: value)
@@ -67,7 +86,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
                 return value
             }
         }
-
+        
         func setActive(value: Int) {
             switch self {
             case .mode:
@@ -99,7 +118,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
                 default:
                     AppDelegate.shared?.notification(withTitle: "Invalid accuracy", action: "ok", andBody: "Selected: \(value)")
                     break
-                }                
+                }
                 break
             case .factor:
                 if value <= 0 {
@@ -112,31 +131,12 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         }
     }
     
-    enum Flavour: Int {
-        case None = 0
-        case Paused
-        case LowPower
-        case Deferred
-        case Foreground
-        case Timer
-    }
-    
-    let activeMode = Mode.Active.rawValue
-    
-    enum Mode: Int {
-        case NotAuthorized = -1
-        case Off
-        case VisitsOnly
-        case Active
-        case Significant
-    }
-    
     static let shared: GPSManager = GPSManager()
     
     let visits = false
     var mode: Mode = .Off
     var flavour: Flavour = .None
-    let deferrable = CLLocationManager.deferredLocationUpdatesAvailable()
+    let deferrable = false // CLLocationManager.deferredLocationUpdatesAvailable()
     
     //    {
     //        set {
@@ -198,7 +198,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             break
         case .LowPower:
             manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
-            manager.distanceFilter = 50000.0
+            manager.distanceFilter = 15000.0
             manager.stopMonitoringVisits()
             break
         case .Deferred:
@@ -225,7 +225,6 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
                 manager.stopMonitoringVisits()
             }
             manager.startUpdatingLocation()
-            
             break
         case .Timer:
             manager.stopUpdatingLocation()
@@ -298,7 +297,6 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     }
     
     var logError = true
-    var lastSummary = Date()
     var callCount: Int = 0
     var uniqueCount: Int  = 0
     let bgAccuracyMinimum = 50.0
@@ -324,15 +322,6 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         for location in locations {
             uniqueCount += 1
             print(location)
-        }
-
-        if -lastSummary.timeIntervalSinceNow > 60.0*60.0 {
-            AppDelegate.shared?.notification(withTitle: "Summary", action: "ok",
-                              andBody: "Got \(callCount) \(mode):\(flavour) updates with \(uniqueCount) points in \( -lastSummary.timeIntervalSinceNow) \(UIDevice.current.batteryLevel * 100)%")
-            logError = true
-            callCount = 0
-            uniqueCount  = 0
-            lastSummary = Date()
         }
     }
     

@@ -18,10 +18,12 @@ class ViewController: UIViewController {
     @IBOutlet weak var modeControl: UISegmentedControl!
     @IBOutlet weak var flavorControl: UISegmentedControl!
     
+    var lastSummary = Date()
+
     var batteryLevel: Float = 1.0
     let batteryMinimum: Float = 0.30
     var batteryState: UIDeviceBatteryState = UIDeviceBatteryState.unknown
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -55,11 +57,23 @@ class ViewController: UIViewController {
         
         self.updateView()
         self.kickTimer(force: true)
+        
+        let notifyTimer = Timer.init(timeInterval: 60*60, target: self, selector: #selector(self.notify), userInfo: nil, repeats: true)
+        RunLoop.main.add(notifyTimer, forMode: RunLoopMode.commonModes)
     }
-
-    func updateStats() {
+    
+    func notify() {
+        AppDelegate.shared?.notification(withTitle: "Summary",
+                                         action: "ok",
+                                         andBody: "Got \(GPSManager.shared.callCount) \(GPSManager.shared.mode):\(GPSManager.shared.flavour) updates with \(GPSManager.shared.uniqueCount) points since \(lastSummary) \(getpid()):\(UIDevice.current.batteryLevel * 100)%")
+        lastSummary = Date()
+        self.resetStats()
+    }
+    
+    func updateScreen() {
         if UIApplication.shared.applicationState != UIApplicationState.active {
-            AppDelegate.shared?.notification(withTitle: "Background update", action: "ok", andBody: "Bad \(UIApplication.shared.applicationState)")
+            AppDelegate.shared?.notification(withTitle: "Background update", action: "ok", andBody: "Bad state: \(UIApplication.shared.applicationState.rawValue)")
+            return
         }
         DispatchQueue.main.async {
             self.updateView()
@@ -69,9 +83,13 @@ class ViewController: UIViewController {
     
     func resetStats() {
         GPSManager.shared.callCount = 0
-        GPSManager.shared.lastSummary = Date()
-        DispatchQueue.main.async {
-            self.updateView()
+        GPSManager.shared.uniqueCount = 0
+        lastSummary = Date()
+        
+        if UIApplication.shared.applicationState == UIApplicationState.active {
+            DispatchQueue.main.async {
+                self.updateView()
+            }
         }
     }
 
@@ -82,7 +100,7 @@ class ViewController: UIViewController {
         accuracy.selectedSegmentIndex = GPSManager.Options.accuracy.get()
 
         filter.text = "\(GPSManager.shared.manager.distanceFilter)"
-        info.text = " \(GPSManager.shared.callCount) calls in the last \(-GPSManager.shared.lastSummary.timeIntervalSinceNow) seconds"
+        info.text = " \(GPSManager.shared.callCount) calls in the last \(-lastSummary.timeIntervalSinceNow) seconds"
         
         if ((GPSManager.shared.lastLocationError) != nil) {
             errorInfo.text = "Error \(GPSManager.shared.lastLocationError?.errorCode): \(GPSManager.shared.lastLocationError?.localizedDescription)"
@@ -98,7 +116,7 @@ class ViewController: UIViewController {
         DispatchQueue.global().async(execute: {
             //DispatchQueue.main.async {
             if force || UIApplication.shared.applicationState == UIApplicationState.active {
-                self.timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.updateStats), userInfo: nil, repeats: false)
+                self.timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.updateScreen), userInfo: nil, repeats: false)
                 RunLoop.current.add(self.timer!, forMode: RunLoopMode.defaultRunLoopMode)
                 RunLoop.current.run()
             }
@@ -186,6 +204,8 @@ class ViewController: UIViewController {
             
         } else if batteryLevel > next && next < batteryMinimum {
             GPSManager.shared.setFlavour(value: .LowPower, reason: "Low battery change \(next * 100)")
+        } else if batteryLevel > next {
+            self.notify()
         }
         batteryLevel = next
     }
