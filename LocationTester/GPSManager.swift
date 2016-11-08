@@ -11,6 +11,15 @@ import MapKit
 
 class GPSManager: NSObject, CLLocationManagerDelegate {
     
+    let activeMode = Mode.Active.rawValue
+    enum Mode: Int {
+        case NotAuthorized = -1
+        case Off
+        case VisitsOnly
+        case Active
+        case Significant
+    }
+    
     enum Flavour: Int {
         case None = 0
         case Paused
@@ -18,16 +27,6 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         case Deferred
         case Foreground
         case Timer
-    }
-    
-    let activeMode = Mode.Active.rawValue
-    
-    enum Mode: Int {
-        case NotAuthorized = -1
-        case Off
-        case VisitsOnly
-        case Active
-        case Significant
     }
     
     enum Options: String {

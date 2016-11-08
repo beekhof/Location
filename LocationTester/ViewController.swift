@@ -55,17 +55,20 @@ class ViewController: UIViewController {
         let mySettings = UIUserNotificationSettings.init(types: types, categories: nil)
         UIApplication.shared.registerUserNotificationSettings(mySettings)
         
+        UIDevice.current.isBatteryMonitoringEnabled = true
+        
         self.updateView()
         self.kickTimer(force: true)
         
-        let notifyTimer = Timer.init(timeInterval: 60*60, target: self, selector: #selector(self.notify), userInfo: nil, repeats: true)
-        RunLoop.main.add(notifyTimer, forMode: RunLoopMode.commonModes)
+        // Doesn't work in the background
+        // let notifyTimer = Timer.init(timeInterval: 60*60, target: self, selector: #selector(self.notify), userInfo: nil, repeats: true)
+        // RunLoop.main.add(notifyTimer, forMode: RunLoopMode.commonModes)
     }
     
     func notify() {
         AppDelegate.shared?.notification(withTitle: "Summary",
                                          action: "ok",
-                                         andBody: "Got \(GPSManager.shared.callCount) \(GPSManager.shared.mode):\(GPSManager.shared.flavour) updates with \(GPSManager.shared.uniqueCount) points since \(lastSummary) \(getpid()):\(UIDevice.current.batteryLevel * 100)%")
+                                         andBody: "\(UIDevice.current.batteryLevel * 100)% - \(GPSManager.shared.callCount) calls since \(lastSummary) - \(GPSManager.shared.mode):\(GPSManager.shared.flavour) updates with \(GPSManager.shared.uniqueCount) points for    \(getpid())")
         lastSummary = Date()
         self.resetStats()
     }
@@ -103,7 +106,7 @@ class ViewController: UIViewController {
         info.text = " \(GPSManager.shared.callCount) calls in the last \(-lastSummary.timeIntervalSinceNow) seconds"
         
         if ((GPSManager.shared.lastLocationError) != nil) {
-            errorInfo.text = "Error \(GPSManager.shared.lastLocationError?.errorCode): \(GPSManager.shared.lastLocationError?.localizedDescription)"
+            errorInfo.text = "Error \((GPSManager.shared.lastLocationError?.errorCode)!): \((GPSManager.shared.lastLocationError?.localizedDescription)!)"
             
         } else {
             errorInfo.text = "No error"
