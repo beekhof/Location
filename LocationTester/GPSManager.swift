@@ -132,7 +132,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     
     static let shared: GPSManager = GPSManager()
     
-    let visits = false
+    let visits = true
     var mode: Mode = .Off
     var flavour: Flavour = .None
     let deferrable = false // CLLocationManager.deferredLocationUpdatesAvailable()
@@ -168,6 +168,34 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         self.setFlavour(value: GPSManager.Flavour(rawValue: sender.selectedSegmentIndex)!, reason: reason)
     }
 
+    func disableFlavour(value: Flavour, reason: String) {
+        
+        switch value {
+        case .None:
+            break
+        case .Paused:
+            manager.stopMonitoringSignificantLocationChanges()
+            break
+        case .LowPower:
+            break
+        case .Deferred:
+            manager.disallowDeferredLocationUpdates()
+            break
+        case .Foreground:
+            manager.stopMonitoringSignificantLocationChanges()
+            if visits {
+                manager.startMonitoringVisits()
+            } else {
+                manager.stopMonitoringVisits()
+            }
+            manager.startUpdatingLocation()
+            break
+        case .Timer:
+            UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
+            break
+        }
+    }
+
     func setFlavour(value: Flavour, reason: String) {
         if mode != .Active {
             return
@@ -189,16 +217,19 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         
         switch flavour {
         case .None:
+            manager.stopMonitoringVisits()
             manager.stopUpdatingLocation()
+            manager.stopMonitoringSignificantLocationChanges()
             UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
             break
+
         case .Paused:
-            manager.startMonitoringSignificantLocationChanges()
+            //manager.startMonitoringSignificantLocationChanges()
             break
+        
         case .LowPower:
             manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
             manager.distanceFilter = 15000.0
-            manager.stopMonitoringVisits()
             break
         case .Deferred:
             manager.desiredAccuracy = kCLLocationAccuracyBest
@@ -206,7 +237,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             manager.allowDeferredLocationUpdates(untilTraveled: CLLocationDistanceMax, timeout: CLTimeIntervalMax)
             break
         case .Foreground:
-            manager.pausesLocationUpdatesAutomatically = false
+            manager.pausesLocationUpdatesAutomatically = true
             // Best == GPS
             // BestForNavigation == GPS + Other sensor data
             manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
@@ -215,14 +246,11 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             if deferrable {
                 manager.disallowDeferredLocationUpdates()
             }
-            
-            UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
-            manager.stopMonitoringSignificantLocationChanges()
+
             if visits {
                 manager.startMonitoringVisits()
-            } else {
-                manager.stopMonitoringVisits()
             }
+
             manager.startUpdatingLocation()
             break
         case .Timer:
@@ -245,20 +273,12 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             return
         }
         
-        var newMode = value
-        
-        if newMode == mode {
+        if value == mode {
             return
         }
         
-        if newMode == .Active
-            && UIApplication.shared.applicationState == UIApplicationState.background {
-            AppDelegate.shared?.notification(withTitle: "Cannot change mode from \(mode) to \(value)", action: "ok", andBody: "Running in backgrounded")
-            newMode = .Significant
-        }
-        
         AppDelegate.shared?.notification(withTitle: "Switching from \(mode) updates to \(value)", action: "ok", andBody: reason)
-        mode = newMode
+        mode = value
         
         switch mode {
         case .NotAuthorized:
@@ -312,7 +332,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             
         } else if flavour == .Paused {
             AppDelegate.shared?.notification(withTitle: "Called", action: "ok", andBody: "Got \(locations.count) \(flavour) updates")
-            self.setFlavour(value: .Foreground, reason: #function)
+            //self.setFlavour(value: .Foreground, reason: #function)
             
         } else if flavour == .None {
             return
@@ -329,7 +349,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         lastLocationError = error as? CLError
         
         if needLocation {
-            AppDelegate.shared?.notification(withTitle: "Location API error", action: "ok", andBody: "\(lastLocationError!.code.rawValue) \(lastLocationError!.localizedDescription) \(manager.location)")
+            AppDelegate.shared?.notification(withTitle: "Location API error", action: "ok", andBody: "API Error \(lastLocationError!.code.rawValue) \(lastLocationError!.localizedDescription) \(manager.location)")
         }
 
         switch(lastLocationError!.code) {
@@ -388,7 +408,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             break
         }
         
-        AppDelegate.shared?.notification(withTitle: "Location API error", action: "ok", andBody: "\(lastLocationError!.code.rawValue) \(lastLocationError!.localizedDescription)")
+        AppDelegate.shared?.notification(withTitle: "Location API error", action: "ok", andBody: "API error \(lastLocationError!.code.rawValue) \(lastLocationError!.localizedDescription)")
         self.setFlavour(value: .Foreground, reason: "Deferred updates failed \(error.localizedDescription)")
     }
     
@@ -397,13 +417,13 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     }
     
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
-        AppDelegate.shared?.notification(withTitle: "Location API paused", action: "ok", andBody: "\(UIApplication.shared.backgroundTimeRemaining)")
-        self.setFlavour(value: .Paused, reason: #function)
+        AppDelegate.shared?.notification(withTitle: "Location API paused", action: "ok", andBody: "Paused \(UIApplication.shared.backgroundTimeRemaining)")
+        //self.setFlavour(value: .Paused, reason: #function)
     }
     
     func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
-        AppDelegate.shared?.notification(withTitle: "Location API resumed", action: "ok", andBody: "\(UIApplication.shared.backgroundTimeRemaining)")
-        self.setFlavour(value: .Foreground, reason: #function)
+        AppDelegate.shared?.notification(withTitle: "Location API resumed", action: "ok", andBody: "Resumed \(UIApplication.shared.backgroundTimeRemaining)")
+        //self.setFlavour(value: .Foreground, reason: #function)
     }
     
     // MARK: Helpers

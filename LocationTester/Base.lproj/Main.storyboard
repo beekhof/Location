@@ -43,6 +43,7 @@
                                             <segment title="Destinations"/>
                                             <segment title="Directions"/>
                                             <segment title="Significant"/>
+                                            <segment title="Smart"/>
                                         </segments>
                                         <connections>
                                             <action selector="ChangeMode:" destination="BYZ-38-t0r" eventType="valueChanged" id="Oks-bU-eE8"/>
