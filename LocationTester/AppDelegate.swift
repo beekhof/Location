@@ -18,8 +18,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     var window: UIWindow?
     let manager: GPSManager = GPSManager.shared
 
-    let sigManager = CLLocationManager()
-
     static var shared: AppDelegate? {
         get {
             return UIApplication.shared.delegate as? AppDelegate
@@ -54,9 +52,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        sigManager.delegate = self
-        sigManager.startMonitoringSignificantLocationChanges()
-
         self.notification(withTitle: "Launch", action: "ok", andBody: "Launch \(launchOptions?[UIApplicationLaunchOptionsKey.location] != nil) \(launchOptions)")
 
         return true
