@@ -105,12 +105,12 @@
 			children = (
 				B979AE931DA10B7800EE4D46 /* AppDelegate.swift */,
 				B979AE951DA10B7800EE4D46 /* ViewController.swift */,
+				B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */,
 				B979AE971DA10B7800EE4D46 /* Main.storyboard */,
 				B979AE9D1DA10B7800EE4D46 /* Assets.xcassets */,
 				B979AE9F1DA10B7800EE4D46 /* LaunchScreen.storyboard */,
 				B979AEA21DA10B7800EE4D46 /* Info.plist */,
 				B979AE9A1DA10B7800EE4D46 /* LocationTester.xcdatamodeld */,
-				B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */,
 			);
 			path = LocationTester;
 			sourceTree = "<group>";

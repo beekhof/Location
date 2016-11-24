@@ -29,7 +29,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
 
         NotificationCenter.default.addObserver(
-            self, selector: #selector(applicationDidBecomeActive), name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+            self, selector: #selector(applicationDidBecomeActive), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
 
         NotificationCenter.default.addObserver(
             self, selector: #selector(applicationDidEnterBackground), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
@@ -43,14 +43,6 @@ class ViewController: UIViewController {
 //        NotificationCenter.default.addObserver(
 //            self, selector: #selector(powerStateChanged), name: NSNotification.Name.NSProcessInfoPowerStateDidChange, object: nil)
 
-
-        print(UserDefaults.standard.dictionaryRepresentation())
-        
-        modeControl.selectedSegmentIndex =  GPSManager.Options.mode.restore()
-        flavorControl.selectedSegmentIndex = GPSManager.Options.flavour.restore()
-        accuracy.selectedSegmentIndex = GPSManager.Options.accuracy.restore()
-        filterMultiplier.selectedSegmentIndex = GPSManager.Options.factor.restore()
-
         let types = UIUserNotificationType.alert //| UIUserNotificationType.badge | UIUserNotificationType.sound
         let mySettings = UIUserNotificationSettings.init(types: types, categories: nil)
         UIApplication.shared.registerUserNotificationSettings(mySettings)
@@ -58,7 +50,6 @@ class ViewController: UIViewController {
         UIDevice.current.isBatteryMonitoringEnabled = true
         
         self.updateView()
-        self.kickTimer(force: true)
         
         // Doesn't work in the background
         // let notifyTimer = Timer.init(timeInterval: 60*60, target: self, selector: #selector(self.notify), userInfo: nil, repeats: true)
@@ -66,9 +57,13 @@ class ViewController: UIViewController {
     }
     
     func notify() {
-        AppDelegate.shared?.notification(withTitle: "Summary",
-                                         action: "ok",
-                                         andBody: "\(UIDevice.current.batteryLevel * 100)% - \(GPSManager.shared.callCount) calls since \(lastSummary) - \(GPSManager.shared.mode):\(GPSManager.shared.flavour) updates for \(getpid())")
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone.current
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        
+        AppDelegate.shared?.notification(withTitle: "Summary", action: "ok",
+                                         andBody: "\(UIDevice.current.batteryLevel * 100)% - \(GPSManager.shared.callCount) \(GPSManager.shared.mode):\(GPSManager.shared.flavour) calls since \(formatter.string(from:lastSummary)) for \(getpid())")
         lastSummary = Date()
         self.resetStats()
     }
@@ -103,6 +98,7 @@ class ViewController: UIViewController {
 
         filter.text = "\(GPSManager.shared.manager.distanceFilter)"
         info.text = " \(GPSManager.shared.callCount) calls in the last \(-lastSummary.timeIntervalSinceNow) seconds"
+        errorInfo.text = "PID \(getpid())"
     }
     
     var timer: Timer? = nil

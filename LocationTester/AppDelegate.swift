@@ -52,13 +52,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        manager.delegate = self
         self.notification(withTitle: "Launch", action: "ok", andBody: "Launch \(launchOptions?[UIApplicationLaunchOptionsKey.location] != nil) \(launchOptions)")
 
         return true
     }
 
+    // MARK: Location API
+    func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        self.notification(withTitle: "Significant change", action: "ok", andBody: "Change \(locations)")
+        for location in locations {
+            print(location)
+        }
+        
     }
     
     func applicationWillResignActive(_ application: UIApplication) {
@@ -77,6 +85,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        GPSManager.shared.locationManager(GPSManager.shared.manager, didChangeAuthorization: CLLocationManager.authorizationStatus())
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
