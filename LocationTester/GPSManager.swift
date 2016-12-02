@@ -12,7 +12,7 @@ import MapKit
 class GPSManager: NSObject, CLLocationManagerDelegate {
     
     // Hack for Obj-C
-    let activeMode = Mode.Active.rawValue
+    let activeMode = Mode.Best.rawValue
     
     static let shared: GPSManager = GPSManager()
     var delegate: CLLocationManagerDelegate?
@@ -35,9 +35,9 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     enum Mode: Int {
         case NotAuthorized = -1
         case Off
-        case VisitsOnly
-        case Active
         case LowPower
+        case Best
+        case Smart
     }
     
     enum Flavour: Int {
@@ -49,7 +49,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     override init() {
         super.init()
         manager.delegate = self
-        manager.allowsBackgroundLocationUpdates = true        
+        manager.allowsBackgroundLocationUpdates = true
     }
     
     func restore() {
@@ -67,6 +67,12 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     }
     
     // MARK: Control state changes
+    func kickManager(reason: String) {
+        let configured = Mode(rawValue: Options.mode.get())
+        if configured == .Best || configured == .Smart {
+            self.setMode(value: configured!, reason: reason)
+        }
+    }
     
     func setFlavour(sender: UISegmentedControl, reason: String) {
         Options.flavour.set(value: sender.selectedSegmentIndex)
@@ -77,7 +83,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         if value == flavour {
             return
             
-        } else if mode != .Active && mode != .LowPower {
+        } else if mode != .Best && mode != .Smart {
             AppDelegate.shared?.notification(withTitle: "\(getpid()) Ignoring flavour change", action: "ok", andBody: "Not switching from \(flavour) updates to \(value) - \(reason)")
             return
         }
@@ -122,9 +128,9 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             return
         }
         
-        if value == .LowPower || value == .Active {
+        if value == .Smart || value == .Best {
             let configured = Options.mode.get()
-            if configured != Mode.Active.rawValue && configured != Mode.LowPower.rawValue {
+            if configured != Mode.Best.rawValue && configured != Mode.Smart.rawValue {
                 AppDelegate.shared?.notification(withTitle: "Not switching from \(mode) updates to \(value)", action: "ok", andBody: "Need \(configured)")
                 return
             }
@@ -133,6 +139,8 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         AppDelegate.shared?.notification(withTitle: "Switching from \(mode) updates to \(value)", action: "ok", andBody: reason)
         //        PTSModelDelegate.save(pointsContext, caller: #function)
         mode = value
+        
+        manager.stopMonitoringSignificantLocationChanges()
         
         switch mode {
         case .NotAuthorized:
@@ -147,14 +155,18 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             manager.stopMonitoringVisits()
             break
             
-        case .VisitsOnly:
+        case .LowPower:
+            significant.manager.stopMonitoringSignificantLocationChanges()
+            manager.startMonitoringSignificantLocationChanges()
             self.setFlavour(value: .None, reason: reason)
             manager.startMonitoringVisits()
             break
             
-        case .Active:
+        case .Best:
             self.setFlavour(value: .GPS, reason: reason)
             manager.pausesLocationUpdatesAutomatically = false
+            significant.manager.startMonitoringSignificantLocationChanges()
+            
             // Best == GPS
             // BestForNavigation == GPS + Other sensor data
             manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
@@ -163,9 +175,11 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             Options.filter.activate(value: 10)
             break
             
-        case .LowPower:
+        case .Smart:
             self.setFlavour(value: .GPS, reason: reason)
             manager.pausesLocationUpdatesAutomatically = true
+            significant.manager.startMonitoringSignificantLocationChanges()
+            
             manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
             
             Options.accuracy.activate(value: Options.accuracy.getActive())
@@ -176,15 +190,11 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
     
     // MARK: Location API
     func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
-        //        AppDelegate.shared?.responds(to: #selector(loca))
-        AppDelegate.notice("Visit event \(visit)")
-        answerEvent("Lifecycle", ["Event":"Visit"])
-        
-        if(Options.mode.get() == Mode.Active.rawValue && mode == .NotAuthorized) {
+        if(Options.mode.get() == Mode.Best.rawValue && mode == .NotAuthorized) {
             AppDelegate.shared?.notification(withTitle: "GPS tracking is currently paused", action: "re-enable", andBody: "Recording Stopped")
         }
         
-        if(visit.departureDate > Date.distantPast) {
+        if(visit.departureDate < Date.distantPast) {
             self.setFlavour(value: .GPS, reason: "Departed \(visit.departureDate)")
         }
         
@@ -318,7 +328,7 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
         case .notDetermined:
             if value != .Off {
                 
-                if(value == .Active && UIApplication.shared.applicationState == UIApplicationState.active) {
+                if(value == .Best && UIApplication.shared.applicationState == UIApplicationState.active) {
                     manager.requestAlwaysAuthorization()
                 }
                 
@@ -379,34 +389,51 @@ class GPSManager: NSObject, CLLocationManagerDelegate {
             
             manager.delegate = self
             manager.allowsBackgroundLocationUpdates = true
-            manager.startMonitoringSignificantLocationChanges()
         }
         
         func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-            
             count += 1
             if GPSManager.shared.flavour != .Paused {
+                //                AppDelegate.shared?.notification(withTitle: "(Sig) Ignoring change (mode)", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) \(GPSManager.shared.flavour):  \(locations[0])")
                 return
             }
+            
             for location in locations {
                 let distance = last?.distance(from: location)
                 if location.horizontalAccuracy > 1000.0 {
-                    AppDelegate.shared?.notification(withTitle: "Insignificant change (accuracy)", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) \(location)")
+                    AppDelegate.shared?.notification(withTitle: "Insignificant change (accuracy)", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) Insignificant accuracy \(location)")
                     continue
                     
                 } else if last == nil {
                     GPSManager.shared.setFlavour(value: .GPS, reason: "First significant")
                     
                 } else if distance != nil && distance!.isLess(than: 20.0) == false {
-                    AppDelegate.shared?.notification(withTitle: "Significant change", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) \(distance)m :  \(location)")
+                    AppDelegate.shared?.notification(withTitle: "Significant change", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) \(distance)m : Significant \(location)")
                     GPSManager.shared.setFlavour(value: .GPS, reason: "Significant change \(distance)")
                     
                 } else {
-                    AppDelegate.shared?.notification(withTitle: "Insignificant change (distance)", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) \(distance)m :  \(location)")
+                    AppDelegate.shared?.notification(withTitle: "Insignificant change (distance)", action: "ok", andBody: "\(getpid()).\(count).\(locations.count) Insignificant \(distance)m : \(location)")
                 }
                 last = location
             }
             return
+        }
+        
+        func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+            let lastLocationError = error as? CLError
+            AppDelegate.shared?.notification(withTitle: "(Sig) Location API error", action: "ok", andBody: "\(lastLocationError!.code.rawValue) \(lastLocationError!.localizedDescription)")
+        }
+        
+        func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+            AppDelegate.shared?.notification(withTitle: "(Sig) Auth change", action: "ok", andBody: "New auth status \(status))")
+        }
+        
+        func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
+            AppDelegate.shared?.notification(withTitle: "(Sig) GPS Paused", action: "ok", andBody: " \(UIApplication.shared.backgroundTimeRemaining))")
+        }
+        
+        func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
+            AppDelegate.shared?.notification(withTitle: "(Sig) GPS Resumed", action: "ok", andBody: " \(UIApplication.shared.backgroundTimeRemaining))")
         }
     }
     

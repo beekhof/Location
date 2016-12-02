@@ -40,9 +40,9 @@
                                         <rect key="frame" x="0.0" y="69" width="365" height="29"/>
                                         <segments>
                                             <segment title="Disabled"/>
-                                            <segment title="Destinations"/>
-                                            <segment title="Directions"/>
                                             <segment title="Low Power"/>
+                                            <segment title="Best"/>
+                                            <segment title="Smart"/>
                                         </segments>
                                         <connections>
                                             <action selector="ChangeMode:" destination="BYZ-38-t0r" eventType="valueChanged" id="Oks-bU-eE8"/>
@@ -54,7 +54,6 @@
                                             <segment title="None"/>
                                             <segment title="Paused"/>
                                             <segment title="GPS"/>
-                                            <segment title="Timer"/>
                                         </segments>
                                         <connections>
                                             <action selector="ChangeFlavor:" destination="BYZ-38-t0r" eventType="valueChanged" id="ta5-oL-sR4"/>

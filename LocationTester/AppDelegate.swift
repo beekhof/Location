@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
 
     func notification(withTitle title: String, action: String, andBody body: String) {
         
-        print("\(UIApplication.shared.applicationState.rawValue):\(UIApplicationState.background.rawValue) \(title): \(body)")
+        print("[Notify] \(UIApplication.shared.applicationState.rawValue):\(UIApplicationState.background.rawValue) \(title): \(body)")
         
         if UIApplication.shared.applicationState == UIApplicationState.active {
             OperationQueue.main.addOperation({
@@ -66,13 +66,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         for location in locations {
             print(location)
         }
-        
+    }
+    
+    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        self.notification(withTitle: "Fetching", action: "ok", andBody: "\(getpid()) fetching at \(Date())")
+        completionHandler(UIBackgroundFetchResult.newData)
     }
     
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-    }
+        self.notification(withTitle: "Deactivating", action: "ok", andBody: "\(getpid()) deactivating at \(Date())")
+   }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
@@ -92,6 +97,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
 //        self.saveContext()
+        self.notification(withTitle: "Exiting", action: "ok", andBody: "\(getpid()) exiting at \(Date())")
     }
 }
 

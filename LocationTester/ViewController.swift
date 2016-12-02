@@ -172,9 +172,7 @@ class ViewController: UIViewController {
             break
             
         case UIDeviceBatteryState.charging:
-            if GPSManager.Options.mode.get() == GPSManager.Mode.Active.rawValue {
-                GPSManager.shared.setMode(value: .Active, reason: "Charging from \(UIDevice.current.batteryLevel * 100)")
-            }
+            GPSManager.shared.kickManager(reason: "Charging from \(UIDevice.current.batteryLevel * 100)")
             break
             
         case UIDeviceBatteryState.full:
@@ -202,8 +200,8 @@ class ViewController: UIViewController {
         if ProcessInfo.processInfo.isLowPowerModeEnabled {
             GPSManager.shared.setMode(value: .LowPower, reason: "Low power mode enabled")
             
-        } else if UIDevice.current.batteryLevel > 20.0 && GPSManager.Options.mode.get() == GPSManager.Mode.Active.rawValue {
-            GPSManager.shared.setMode(value: .Active, reason: "Low power mode disabled")
+        } else if UIDevice.current.batteryLevel > 20.0 {
+            GPSManager.shared.kickManager(reason: "Low power mode disabled")
         }
     }
 }
