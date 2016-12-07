@@ -63,8 +63,7 @@ class ViewController: UIViewController {
         formatter.timeStyle = .short
         
         AppDelegate.shared?.notification(withTitle: "Summary", action: "ok",
-                                         andBody: "\(UIDevice.current.batteryLevel * 100)% - \(GPSManager.shared.callCount) \(GPSManager.shared.mode):\(GPSManager.shared.flavour) calls since \(formatter.string(from:lastSummary)) for \(getpid())")
-        lastSummary = Date()
+                                         andBody: "\(UIDevice.current.batteryLevel * 100)% - \(GPSManager.shared.stats()) calls since \(formatter.string(from:lastSummary)) for \(getpid())")
         self.resetStats()
     }
     
@@ -80,8 +79,8 @@ class ViewController: UIViewController {
     }
     
     func resetStats() {
-        GPSManager.shared.callCount = 0
         lastSummary = Date()
+        GPSManager.shared.resetStats()
         
         if UIApplication.shared.applicationState == UIApplicationState.active {
             DispatchQueue.main.async {
@@ -92,12 +91,12 @@ class ViewController: UIViewController {
 
     func updateView() {
         modeControl.selectedSegmentIndex = GPSManager.Options.mode.get()
-        flavorControl.selectedSegmentIndex = GPSManager.Options.flavour.get()
+        flavorControl.selectedSegmentIndex = GPSManager.shared.detail.flavour.rawValue
         filterMultiplier.selectedSegmentIndex = GPSManager.Options.factor.get()
         accuracy.selectedSegmentIndex = GPSManager.Options.accuracy.get()
 
-        filter.text = "\(GPSManager.shared.manager.distanceFilter)"
-        info.text = " \(GPSManager.shared.callCount) calls in the last \(-lastSummary.timeIntervalSinceNow) seconds"
+        filter.text = "\(GPSManager.shared.detail.manager.distanceFilter)"
+        info.text = " \(GPSManager.shared.stats()) calls in the last \(-lastSummary.timeIntervalSinceNow) seconds"
         errorInfo.text = "PID \(getpid())"
     }
     

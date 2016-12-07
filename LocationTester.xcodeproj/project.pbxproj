@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B92BBA131DC4C1E400F3C7A0 /* GPSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */; };
+		B92652D21DF81F320034D605 /* LocationPassive.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652CF1DF81F320034D605 /* LocationPassive.swift */; };
+		B92652D31DF81F320034D605 /* GPSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652D01DF81F320034D605 /* GPSManager.swift */; };
+		B92652D41DF81F320034D605 /* LocationDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652D11DF81F320034D605 /* LocationDetail.swift */; };
 		B979AE941DA10B7800EE4D46 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AE931DA10B7800EE4D46 /* AppDelegate.swift */; };
 		B979AE961DA10B7800EE4D46 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AE951DA10B7800EE4D46 /* ViewController.swift */; };
 		B979AE991DA10B7800EE4D46 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B979AE971DA10B7800EE4D46 /* Main.storyboard */; };
@@ -36,7 +38,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GPSManager.swift; sourceTree = "<group>"; };
+		B92652CF1DF81F320034D605 /* LocationPassive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationPassive.swift; path = Location/LocationPassive.swift; sourceTree = "<group>"; };
+		B92652D01DF81F320034D605 /* GPSManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GPSManager.swift; path = Location/GPSManager.swift; sourceTree = "<group>"; };
+		B92652D11DF81F320034D605 /* LocationDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationDetail.swift; path = Location/LocationDetail.swift; sourceTree = "<group>"; };
 		B979AE901DA10B7800EE4D46 /* LocationTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B979AE931DA10B7800EE4D46 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B979AE951DA10B7800EE4D46 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -103,9 +107,11 @@
 		B979AE921DA10B7800EE4D46 /* LocationTester */ = {
 			isa = PBXGroup;
 			children = (
+				B92652CF1DF81F320034D605 /* LocationPassive.swift */,
+				B92652D01DF81F320034D605 /* GPSManager.swift */,
+				B92652D11DF81F320034D605 /* LocationDetail.swift */,
 				B979AE931DA10B7800EE4D46 /* AppDelegate.swift */,
 				B979AE951DA10B7800EE4D46 /* ViewController.swift */,
-				B92BBA121DC4C1E400F3C7A0 /* GPSManager.swift */,
 				B979AE971DA10B7800EE4D46 /* Main.storyboard */,
 				B979AE9D1DA10B7800EE4D46 /* Assets.xcassets */,
 				B979AE9F1DA10B7800EE4D46 /* LaunchScreen.storyboard */,
@@ -276,9 +282,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B92652D21DF81F320034D605 /* LocationPassive.swift in Sources */,
 				B979AE961DA10B7800EE4D46 /* ViewController.swift in Sources */,
+				B92652D31DF81F320034D605 /* GPSManager.swift in Sources */,
+				B92652D41DF81F320034D605 /* LocationDetail.swift in Sources */,
 				B979AE9C1DA10B7800EE4D46 /* LocationTester.xcdatamodeld in Sources */,
-				B92BBA131DC4C1E400F3C7A0 /* GPSManager.swift in Sources */,
 				B979AE941DA10B7800EE4D46 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

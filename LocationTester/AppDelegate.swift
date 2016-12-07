@@ -24,15 +24,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         }
     }
 
+    var alert: UIAlertController?
     func notification(withTitle title: String, action: String, andBody body: String) {
         
-        print("[Notify] \(UIApplication.shared.applicationState.rawValue):\(UIApplicationState.background.rawValue) \(title): \(body)")
+        // Active = 0
+        // Inactive = 1
+        // Background = 2
+        print("[Notify] \(getpid()).\(UIApplication.shared.applicationState.rawValue) \(title): \(body)")
         
-        if UIApplication.shared.applicationState == UIApplicationState.active {
+        if self.alert == nil && UIApplication.shared.applicationState == UIApplicationState.active {
+            self.alert = UIAlertController(title: title, message: body, preferredStyle: .alert)
+            self.alert!.addAction(UIAlertAction(title: action, style: .cancel, handler: nil))
             OperationQueue.main.addOperation({
-                let alert = UIAlertController(title: title, message: body, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: action, style: .cancel, handler: nil))
-                self.window?.rootViewController?.present(alert, animated: true, completion: nil)
+                self.window?.rootViewController?.present(self.alert!, animated: true, completion: { self.alert = nil })
             })
             
         } else if UIApplication.shared.applicationState == UIApplicationState.background {
@@ -76,7 +80,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-        self.notification(withTitle: "Deactivating", action: "ok", andBody: "\(getpid()) deactivating at \(Date())")
+        //self.notification(withTitle: "Deactivating", action: "ok", andBody: "\(getpid()) deactivating at \(Date())")
    }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -90,7 +94,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        GPSManager.shared.locationManager(GPSManager.shared.manager, didChangeAuthorization: CLLocationManager.authorizationStatus())
+        // GPSManager.shared.locationManager(GPSManager.shared.manager, didChangeAuthorization: CLLocationManager.authorizationStatus())
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
