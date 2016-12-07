@@ -10,6 +10,7 @@
 		B92652D21DF81F320034D605 /* LocationPassive.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652CF1DF81F320034D605 /* LocationPassive.swift */; };
 		B92652D31DF81F320034D605 /* GPSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652D01DF81F320034D605 /* GPSManager.swift */; };
 		B92652D41DF81F320034D605 /* LocationDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652D11DF81F320034D605 /* LocationDetail.swift */; };
+		B92652D81DF8C8B10034D605 /* LocationPoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92652D71DF8C8B10034D605 /* LocationPoller.swift */; };
 		B979AE941DA10B7800EE4D46 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AE931DA10B7800EE4D46 /* AppDelegate.swift */; };
 		B979AE961DA10B7800EE4D46 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979AE951DA10B7800EE4D46 /* ViewController.swift */; };
 		B979AE991DA10B7800EE4D46 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B979AE971DA10B7800EE4D46 /* Main.storyboard */; };
@@ -41,6 +42,7 @@
 		B92652CF1DF81F320034D605 /* LocationPassive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationPassive.swift; path = Location/LocationPassive.swift; sourceTree = "<group>"; };
 		B92652D01DF81F320034D605 /* GPSManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GPSManager.swift; path = Location/GPSManager.swift; sourceTree = "<group>"; };
 		B92652D11DF81F320034D605 /* LocationDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationDetail.swift; path = Location/LocationDetail.swift; sourceTree = "<group>"; };
+		B92652D71DF8C8B10034D605 /* LocationPoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationPoller.swift; path = Location/LocationPoller.swift; sourceTree = "<group>"; };
 		B979AE901DA10B7800EE4D46 /* LocationTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B979AE931DA10B7800EE4D46 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B979AE951DA10B7800EE4D46 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			children = (
 				B92652CF1DF81F320034D605 /* LocationPassive.swift */,
 				B92652D01DF81F320034D605 /* GPSManager.swift */,
+				B92652D71DF8C8B10034D605 /* LocationPoller.swift */,
 				B92652D11DF81F320034D605 /* LocationDetail.swift */,
 				B979AE931DA10B7800EE4D46 /* AppDelegate.swift */,
 				B979AE951DA10B7800EE4D46 /* ViewController.swift */,
@@ -288,6 +291,7 @@
 				B92652D41DF81F320034D605 /* LocationDetail.swift in Sources */,
 				B979AE9C1DA10B7800EE4D46 /* LocationTester.xcdatamodeld in Sources */,
 				B979AE941DA10B7800EE4D46 /* AppDelegate.swift in Sources */,
+				B92652D81DF8C8B10034D605 /* LocationPoller.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

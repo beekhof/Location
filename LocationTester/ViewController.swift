@@ -69,7 +69,6 @@ class ViewController: UIViewController {
     
     func updateScreen() {
         if UIApplication.shared.applicationState != UIApplicationState.active {
-            AppDelegate.shared?.notification(withTitle: "Background update", action: "ok", andBody: "Bad state: \(UIApplication.shared.applicationState.rawValue)")
             return
         }
         DispatchQueue.main.async {
@@ -115,23 +114,23 @@ class ViewController: UIViewController {
 
     // MARK: User actions
     @IBAction func ChangeMode(_ sender: UISegmentedControl) {
-        GPSManager.Options.mode.activate(value: sender.selectedSegmentIndex)
+        GPSManager.Options.mode.activate(value: sender.selectedSegmentIndex, for: GPSManager.shared.detail.manager)
         self.resetStats()
     }
     
     @IBAction func ChangeFlavor(_ sender: UISegmentedControl) {
-        GPSManager.Options.flavour.activate(value: sender.selectedSegmentIndex)
+        GPSManager.Options.flavour.activate(value: sender.selectedSegmentIndex, for: GPSManager.shared.detail.manager)
         self.resetStats()
     }
     
     @IBAction func updateFactor(_ sender: UISegmentedControl) {
-        GPSManager.Options.factor.activate(value: sender.selectedSegmentIndex)
+        GPSManager.Options.factor.activate(value: sender.selectedSegmentIndex, for: GPSManager.shared.detail.manager)
         self.resetStats()
     }
     
     @IBAction func ChangeAccuracy(_ sender: UISegmentedControl) {
-        GPSManager.Options.accuracy.activate(value: sender.selectedSegmentIndex)
-        GPSManager.Options.factor.activate(value: filterMultiplier.selectedSegmentIndex)
+        GPSManager.Options.accuracy.activate(value: sender.selectedSegmentIndex, for: GPSManager.shared.detail.manager)
+        GPSManager.Options.factor.activate(value: filterMultiplier.selectedSegmentIndex, for: GPSManager.shared.detail.manager)
         self.resetStats()
     }
     
